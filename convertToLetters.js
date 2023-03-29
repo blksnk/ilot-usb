@@ -1,4 +1,6 @@
 const { writeOutputJSON, writeMultipleOutputs } = require('./output')
+const { readFile } = require("node:fs/promises")
+
 
 const data = {
   itemCounts: {
@@ -15,8 +17,23 @@ const data = {
   tshirtNumbers: [2, 6, 7, 7, 7]
 }
 
-const alphabet = [ "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
+const alphabet = [ "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+const dictPath = "./data/frenchWords.json";
 
+const loadDictionary = async () => {
+  const dictFileContents = await readFile(dictPath, { encoding: 'utf8' })
+  const dict = JSON.parse(dictFileContents);
+  // remove accents and special chars
+  const normalized = dict.map(word =>
+    word
+      .replaceAll("é", "e")
+      .replaceAll("è", "e")
+      .replaceAll("ê", "e")
+      .replaceAll("à", "a")
+      .replaceAll("ç", "c")
+  )
+  return dict;
+}
 
 const convertToLetter = (n) => alphabet[n - 1];
 
@@ -54,18 +71,25 @@ const generateUniqueWords = (letters, limit = 100, uniqueLetters = false) => {
       i++
     }
   }
-
+  console.log(words)
   return words;
 }
 
+const getExistingWords = (dictionary, words) => {
+  console.log('searching for existing french words...')
+  const existing =  words.filter(word => dictionary.includes(word.toLowerCase()))
+  console.log('found ', existing.length, ' existing words:\n', existing)
+  return existing;
+}
 
-const main = () => {
+
+const main = async () => {
+  const dictionary = await loadDictionary()
   const itemLetters = convertItemCountsToLetters()
-  const words = generateUniqueWords(itemLetters, 200, true);
-
-  console.log(words)
+  const words = generateUniqueWords(itemLetters, 10000, true);
+  const existingWords = getExistingWords(dictionary, words)
   writeMultipleOutputs({
-    words, itemLetters
+    words, itemLetters, existingWords
   })
 }
 
