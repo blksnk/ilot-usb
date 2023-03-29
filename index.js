@@ -1,9 +1,7 @@
 const { readdir, writeFile } = require('node:fs/promises');
+const { writeOutputJSON, writeMultipleOutputs } = require('./output')
 
 const rootDir = "./data/archipel-1/Îlot"
-
-const outputDir = './'
-const outputPath = "./output.json"
 
 const alphabet = [ "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
 
@@ -99,21 +97,5 @@ const main = async () => {
 
   await writeMultipleOutputs(outputs)
 }
-
-
-const writeOutputJSON = async (data, path = outputPath) => {
-  const filePath = outputDir + path + '.json'
-  console.log('writing file: ', filePath)
-  const stringData = JSON.stringify(data);
-  const fileData = new Uint8Array(Buffer.from(stringData))
-  await writeFile(outputDir + path + '.json', fileData)
-}
-
-const writeMultipleOutputs = async (outputs) => {
-  console.log('writing multiple JSON output files...')
-  await Promise.all(Object.entries(outputs).map(([name, data]) => writeOutputJSON(data, name)))
-  console.log('files written')
-}
-
 
 main()
